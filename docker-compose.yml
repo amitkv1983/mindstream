@@ -1,0 +1,52 @@
+services:
+  mindstream:
+    build: .
+    container_name: mindstream
+    working_dir: /app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./src:/app/src
+      - ./configs:/app/configs
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app/src
+      - CHROMA_HOST=http://chroma:8000
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
+      - chroma
+    command: streamlit run src/mindstream/ui/app.py --server.port 8501 --server.address 0.0.0.0
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    runtime: nvidia
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    environment:
+      - OLLAMA_CONTEXT_LENGTH=8192
+
+  chroma:
+    build:
+      context: .
+      dockerfile: Dockerfile.chroma
+    container_name: chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
+  chroma_data:

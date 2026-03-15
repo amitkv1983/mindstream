@@ -1,0 +1,24 @@
+all below urls are working as expected.
+
+https://www.youtube.com/@DEFTALKSbyAadi
+https://www.youtube.com/watch?v=zk4nkwmNpiU
+https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA
+
+
+results = collection.query(
+    query_embeddings=["AI research progress"],
+    n_results=2
+)
+
+print(results["documents"])
+
+
+import chromadb
+client = chromadb.HttpClient(host="chroma", port=8000)
+
+print(client.list_collections())
+
+
+
+collection = client.get_collection("mindstream_2026_03")
+print(collection.count())

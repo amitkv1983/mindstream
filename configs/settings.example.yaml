@@ -1,0 +1,4 @@
+max_per_channel: 2
+max_videos: 10
+cadence_minutes: 360
+window_hours: 24

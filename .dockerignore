@@ -1,0 +1,11 @@
+.git
+.github
+.pytest_cache
+.venv
+__pycache__/
+*.pyc
+*.egg-info
+data/*
+!data/raw/.keep
+!data/per_video/.keep
+!data/reports/.keep
