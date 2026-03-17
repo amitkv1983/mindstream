@@ -9,3 +9,4 @@ httpx
 chromadb
 scikit-learn
 hdbscan
+APScheduler

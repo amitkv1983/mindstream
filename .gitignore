@@ -9,3 +9,6 @@ data/*
 !data/raw/.keep
 !data/per_video/.keep
 !data/reports/.keep
+.context/temp/
+.context/issues/
+.context/reports/

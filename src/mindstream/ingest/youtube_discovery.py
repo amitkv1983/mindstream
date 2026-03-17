@@ -133,6 +133,7 @@ def fetch_channel_videos(channel_id: str, max_results: int) -> list[VideoMetadat
     response.raise_for_status()
 
     root = ET.fromstring(response.text)
+    channel_name = root.findtext("atom:title", default=None, namespaces=NAMESPACES)
     videos: list[VideoMetadata] = []
     for entry in root.findall("atom:entry", NAMESPACES):
         video_id = _extract_video_id_from_entry(entry)
@@ -146,6 +147,7 @@ def fetch_channel_videos(channel_id: str, max_results: int) -> list[VideoMetadat
                 video_url=f"https://www.youtube.com/watch?v={video_id}",
                 title=title,
                 published_at=published_at,
+                channel=channel_name,
             )
         )
         if len(videos) >= max_results:
@@ -189,6 +191,7 @@ def fetch_video_metadata(video: VideoMetadata) -> VideoMetadata:
         video_url=video.video_url,
         title=title,
         published_at=published_at,
+        channel=video.channel,
     )
 
 
@@ -208,6 +211,7 @@ def parse_video_url(url: str) -> VideoMetadata | None:
         video_url=url,
         title=None,
         published_at=None,
+        channel=None,
     )
 
 

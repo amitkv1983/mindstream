@@ -8,6 +8,7 @@ class VideoMetadata(BaseModel):
     video_url: str
     title: str | None = None
     published_at: str | None = None
+    channel: str | None = None
 
 
 class DiscoveryResult(BaseModel):
@@ -20,6 +21,8 @@ class TranscriptSegment(BaseModel):
     start: float
     duration: float
     text: str
+    # Speaker labels are optional because YouTube transcripts often omit them.
+    speaker: str | None = None
 
 
 class RawVideoRecord(BaseModel):

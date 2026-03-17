@@ -94,3 +94,8 @@ def cluster_chunks(chunks, embeddings):
     results = _build_clusters(chunks, labels)
 
     return results
+
+
+def cluster_summary_documents(summary_documents, embeddings):
+    """Thin wrapper so insight generation can reuse the chunk clustering logic."""
+    return cluster_chunks(summary_documents, embeddings)

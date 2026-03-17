@@ -5,13 +5,14 @@ from pathlib import Path
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
 
+from mindstream.storage.local_store import raw_dir
 from mindstream.storage.models import RawVideoRecord, TranscriptFetchResult, TranscriptSegment, VideoMetadata
 
 TRANSCRIPT_API = YouTubeTranscriptApi()
 
 
-def save_raw_video_record(record: RawVideoRecord, output_dir: str = "data/raw") -> str:
-    output_path = Path(output_dir)
+def save_raw_video_record(record: RawVideoRecord, output_dir: str | None = None, project_id: str = "default") -> str:
+    output_path = Path(output_dir) if output_dir else raw_dir(project_id)
     output_path.mkdir(parents=True, exist_ok=True)
     file_path = output_path / f"{record.metadata.video_id}.json"
     file_path.write_text(record.model_dump_json(indent=2), encoding="utf-8")
@@ -19,8 +20,13 @@ def save_raw_video_record(record: RawVideoRecord, output_dir: str = "data/raw") 
     return file_path.as_posix()
 
 
-def load_raw_video_record(video_id: str, output_dir: str = "data/raw") -> RawVideoRecord | None:
-    file_path = Path(output_dir) / f"{video_id}.json"
+def load_raw_video_record(
+    video_id: str,
+    output_dir: str | None = None,
+    project_id: str = "default",
+) -> RawVideoRecord | None:
+    base_dir = Path(output_dir) if output_dir else raw_dir(project_id)
+    file_path = base_dir / f"{video_id}.json"
     if not file_path.exists():
         return None
 
@@ -99,12 +105,12 @@ def fetch_transcript_for_video(video: VideoMetadata) -> RawVideoRecord:
     )
 
 
-def fetch_transcripts(videos: list[VideoMetadata]) -> TranscriptFetchResult:
+def fetch_transcripts(videos: list[VideoMetadata], project_id: str = "default") -> TranscriptFetchResult:
     result = TranscriptFetchResult()
 
     for video in videos:
         try:
-            cached_record = load_raw_video_record(video.video_id)
+            cached_record = load_raw_video_record(video.video_id, project_id=project_id)
             if cached_record is not None and cached_record.transcript_status == "AVAILABLE":
                 result.fetched_records.append(cached_record)
                 continue
@@ -113,7 +119,7 @@ def fetch_transcripts(videos: list[VideoMetadata]) -> TranscriptFetchResult:
             result.fetched_records.append(record)
 
             if record.transcript_status == "AVAILABLE":
-                save_raw_video_record(record)
+                save_raw_video_record(record, project_id=project_id)
                 continue
 
             if record.transcript_status == "MISSING":
