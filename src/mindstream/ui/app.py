@@ -47,6 +47,16 @@ def _available_projects() -> list[str]:
     return sorted(set(project_ids))
 
 
+def _build_chroma_filter(project_id: str, video_ids: list[str] | None = None) -> dict[str, object]:
+    clauses: list[dict[str, object]] = [{"project_id": project_id}]
+    unique_video_ids = list(dict.fromkeys(video_ids or []))
+    if unique_video_ids:
+        clauses.append({"video_id": {"$in": unique_video_ids}})
+    if len(clauses) == 1:
+        return clauses[0]
+    return {"$and": clauses}
+
+
 def format_timestamp(seconds: float | int | None) -> str:
     total_seconds = max(0, int(seconds or 0))
     minutes, remaining_seconds = divmod(total_seconds, 60)
@@ -154,11 +164,7 @@ def _rag_answer(prompt: str, project_id: str) -> tuple[str, list[dict[str, objec
     print(f"[RAG] Chat model: {RAG_CHAT_MODEL}")
     query_embedding = generate_embedding(prompt)
     print(f"[RAG] Query embedding generated: {bool(query_embedding)}")
-    summary_results = search_video_summaries(
-        query_embedding,
-        top_k=3,
-        where={"project_id": project_id},
-    )
+    summary_results = search_video_summaries(query_embedding, top_k=3, where=_build_chroma_filter(project_id))
     summary_metadatas = (summary_results.get("metadatas") or [[]])[0]
     video_ids = []
     for metadata in summary_metadatas:
@@ -167,9 +173,7 @@ def _rag_answer(prompt: str, project_id: str) -> tuple[str, list[dict[str, objec
     video_ids = list(dict.fromkeys(video_ids))
     print(f"[RAG] Summary-stage videos: {video_ids}")
 
-    chunk_where: dict[str, object] = {"project_id": project_id}
-    if video_ids:
-        chunk_where["video_id"] = {"$in": video_ids}
+    chunk_where = _build_chroma_filter(project_id, video_ids)
 
     chunk_results = search_chunk_collections(
         query_embedding,
@@ -184,7 +188,7 @@ def _rag_answer(prompt: str, project_id: str) -> tuple[str, list[dict[str, objec
             query_embedding,
             top_k=20,
             per_collection_k=10,
-            where={"project_id": project_id},
+            where=_build_chroma_filter(project_id),
         ).get("results", [])
 
     reranked_results = rerank(prompt, retrieved_results)[:5]
