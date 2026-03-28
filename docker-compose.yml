@@ -1,4 +1,25 @@
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: mindstream-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+    env_file:
+      - backend/.env
+    depends_on:
+      - ollama
+      - chroma
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   mindstream:
     build: .
     container_name: mindstream
@@ -41,8 +62,6 @@ services:
       context: .
       dockerfile: Dockerfile.chroma
     container_name: chroma
-    ports:
-      - "8000:8000"
     volumes:
       - chroma_data:/chroma
     restart: unless-stopped

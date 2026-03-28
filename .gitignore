@@ -12,3 +12,5 @@ data/*
 .context/temp/
 .context/issues/
 .context/reports/
+backend/data/*
+!backend/data/.gitkeep

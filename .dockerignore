@@ -1,11 +1,7 @@
-.git
-.github
-.pytest_cache
-.venv
-__pycache__/
+**/__pycache__/
 *.pyc
-*.egg-info
-data/*
-!data/raw/.keep
-!data/per_video/.keep
-!data/reports/.keep
+*.pyo
+*.pyd
+*.db
+backend/data/*
+.env

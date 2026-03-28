@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+requests>=2.31.0
+youtube-transcript-api>=0.6.2
+python-dotenv>=1.0.0
+httpx
+chromadb
+pydantic>=2.0
