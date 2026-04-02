@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from uuid import uuid4
 
 from sqlalchemy.orm import Session
@@ -21,6 +22,9 @@ class SummaryNotReadyError(ValueError):
 
 class SummarizerServiceError(RuntimeError):
     """Raised when summary generation fails."""
+
+
+logger = logging.getLogger(__name__)
 
 
 class SummarizerService:
@@ -48,6 +52,7 @@ class SummarizerService:
         summary = result.summaries[0]
         self._save_summary_record(db, summary)
         db.commit()
+        logger.info("Summary generated: video_id=%s", video_id)
         return summary
 
     def get_summary(self, db: Session, video_id: str) -> PerVideoSummary:

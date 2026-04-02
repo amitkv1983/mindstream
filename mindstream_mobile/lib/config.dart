@@ -1,4 +1,7 @@
 class AppConfig {
-  // Default local-network backend URL for development.
-  static String baseUrl = 'http://192.168.1.13:8000';
+  static String baseUrl = 'http://10.0.2.2:8000';
+
+  static void updateBaseUrl(String newUrl) {
+    baseUrl = newUrl.trim();
+  }
 }

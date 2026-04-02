@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import logging
 import re
 from datetime import datetime
 from uuid import uuid4
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from mindstream.ingest.youtube_discovery import discover_videos, fetch_video_metadata
@@ -14,6 +16,9 @@ from app.db.models import ChannelModel, VideoModel
 
 class ChannelNotFoundError(ValueError):
     """Raised when a channel identifier is unknown."""
+
+
+logger = logging.getLogger(__name__)
 
 
 class YouTubeService:
@@ -29,6 +34,7 @@ class YouTubeService:
         db.add(channel)
         db.commit()
         db.refresh(channel)
+        logger.info("Channel created: id=%s url=%s", channel.id, channel.url)
         return channel
 
     def list_channels(self, db: Session) -> list[ChannelModel]:
@@ -47,6 +53,7 @@ class YouTubeService:
 
         for video in result.videos:
             self._upsert_video(db, channel.id, video)
+            logger.info("Video fetched: id=%s channel_id=%s", video.video_id, channel.id)
         db.commit()
         return result.videos
 
@@ -63,7 +70,7 @@ class YouTubeService:
             )
 
         if not self._looks_like_video_id(video_id):
-            raise ValueError(f"Video '{video_id}' was not found.")
+            raise HTTPException(status_code=404, detail="Video not found")
 
         canonical = VideoMetadata(
             video_id=video_id,
@@ -74,7 +81,7 @@ class YouTubeService:
         )
         enriched = fetch_video_metadata(canonical)
         if not self._is_resolved_video(enriched):
-            raise ValueError(f"Video '{video_id}' was not found.")
+            raise HTTPException(status_code=404, detail="Video not found")
         return enriched
 
     @staticmethod
