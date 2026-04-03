@@ -13,6 +13,11 @@ on:
 env:
   VALID_STATES: "state:idea,state:approved,state:ready,state:in-progress,state:in-review,state:done,state:released"
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 jobs:
   validate-state-transition:
     runs-on: ubuntu-latest

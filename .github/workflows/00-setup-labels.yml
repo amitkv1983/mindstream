@@ -1,0 +1,158 @@
+# Labels: Setup & Sync
+# Reads label definitions from .github/labels.yml and creates/updates all
+# labels in the GitHub repository.
+#
+# Usage:
+#   - Run manually from the Actions tab: "Labels: Setup & Sync" > Run workflow
+#   - Automatically runs when labels.yml changes on the develop or main branch
+#
+# Reference: space_framework 20-rules/12-label-taxonomy.md
+
+name: "Labels: Setup & Sync"
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (preview changes without applying)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - ".github/labels.yml"
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  sync-labels:
+    name: Create / Update Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse and sync labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const isDryRun = '${{ github.event.inputs.dry_run }}' === 'true';
+
+            // ----------------------------------------------------------------
+            // Parse labels.yml (simple YAML parser — no external deps needed)
+            // Format: each label block starts with "- name:" line
+            // ----------------------------------------------------------------
+            const labelsFile = fs.readFileSync('.github/labels.yml', 'utf8');
+            const labels = [];
+            let current = null;
+
+            for (const rawLine of labelsFile.split('\n')) {
+              const line = rawLine.trim();
+              if (line.startsWith('#') || line === '') continue;
+
+              if (line.startsWith('- name:')) {
+                if (current) labels.push(current);
+                current = { name: line.replace('- name:', '').trim().replace(/^["']|["']$/g, '') };
+              } else if (current && line.startsWith('color:')) {
+                current.color = line.replace('color:', '').trim().replace(/^["']|["']$/g, '');
+              } else if (current && line.startsWith('description:')) {
+                current.description = line.replace('description:', '').trim().replace(/^["']|["']$/g, '');
+              }
+            }
+            if (current) labels.push(current);
+
+            console.log(`📋 Found ${labels.length} labels in labels.yml`);
+            if (isDryRun) console.log('🔍 DRY RUN — no changes will be made');
+
+            // ----------------------------------------------------------------
+            // Fetch existing labels from the repository
+            // ----------------------------------------------------------------
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const existingLabels = await github.paginate(
+              github.rest.issues.listLabelsForRepo,
+              { owner, repo, per_page: 100 }
+            );
+            const existingMap = new Map(existingLabels.map(l => [l.name.toLowerCase(), l]));
+
+            const results = { created: [], updated: [], skipped: [], errors: [] };
+
+            for (const label of labels) {
+              const existing = existingMap.get(label.name.toLowerCase());
+
+              try {
+                if (existing) {
+                  // Update if color or description changed
+                  const colorChanged = existing.color.toLowerCase() !== label.color.toLowerCase();
+                  const descChanged = (existing.description || '') !== (label.description || '');
+
+                  if (colorChanged || descChanged) {
+                    if (!isDryRun) {
+                      await github.rest.issues.updateLabel({
+                        owner, repo,
+                        name: existing.name,
+                        new_name: label.name,
+                        color: label.color,
+                        description: label.description || ''
+                      });
+                    }
+                    results.updated.push(label.name);
+                    console.log(`✏️  Updated: ${label.name}`);
+                  } else {
+                    results.skipped.push(label.name);
+                  }
+                } else {
+                  if (!isDryRun) {
+                    await github.rest.issues.createLabel({
+                      owner, repo,
+                      name: label.name,
+                      color: label.color,
+                      description: label.description || ''
+                    });
+                  }
+                  results.created.push(label.name);
+                  console.log(`✅ Created: ${label.name}`);
+                }
+              } catch (err) {
+                results.errors.push(`${label.name}: ${err.message}`);
+                console.log(`❌ Error on ${label.name}: ${err.message}`);
+              }
+            }
+
+            // ----------------------------------------------------------------
+            // Summary
+            // ----------------------------------------------------------------
+            const prefix = isDryRun ? '[DRY RUN] ' : '';
+            console.log('');
+            console.log(`${prefix}📊 Summary:`);
+            console.log(`  ✅ Created : ${results.created.length}`);
+            console.log(`  ✏️  Updated : ${results.updated.length}`);
+            console.log(`  ⏭️  Skipped : ${results.skipped.length}`);
+            console.log(`  ❌ Errors  : ${results.errors.length}`);
+
+            if (results.created.length > 0) {
+              console.log('');
+              console.log(`Created labels: ${results.created.join(', ')}`);
+            }
+            if (results.updated.length > 0) {
+              console.log('');
+              console.log(`Updated labels: ${results.updated.join(', ')}`);
+            }
+            if (results.errors.length > 0) {
+              console.log('');
+              core.setFailed(`Label sync failed for: ${results.errors.join('; ')}`);
+            }

@@ -1,10 +1,10 @@
 # Copilot Instructions: MINDSTREAM
 
-**Project:** CLI-first Python pipeline for YouTube discovery, transcript ingestion, summarization, and reporting  
+**Project:** React-first YouTube Channel Monitoring and Transcript Intelligence Platform  
 **Repository:** https://github.com/amitkv1983/mindstream  
 **Framework:** space_framework (enforced governance)  
 **Framework Repository:** https://github.com/nsin08/space_framework  
-**Last Updated:** 2026-03-17
+**Last Updated:** 2026-04-03
 
 ---
 
@@ -61,11 +61,13 @@ Agents MUST adapt to the user's environment and avoid guessing.
 
 | Item | Value |
 |------|-------|
-| **Primary Language** | Python 3.10+ |
+| **Frontend Language** | TypeScript (React) |
+| **Backend Language** | Python 3.10+ (FastAPI) |
 | **Repository** | https://github.com/amitkv1983/mindstream |
 | **CODEOWNER** | @amitkv1983 |
 | **Tech Lead** | @nsin08 |
 | **PM** | @nsin08 |
+| **POC Reference** | `POC/P_01/` (archived Streamlit implementation) |
 
 **Governance:**
 - All work flows through the state machine (per Rule 01)
@@ -75,34 +77,57 @@ Agents MUST adapt to the user's environment and avoid guessing.
 
 ## 3. Quick Start: Setup & Development
 
-### Clone and Install
+> **Note:** The new React-first platform is currently in the `Idea` state under `space_framework` governance.
+> Implementation has not started yet. The below structure reflects the intended target.
+> Reference implementation (Streamlit/Python POC) is in `POC/P_01/`.
+
+### Target Stack
+
+| Component | Tech | Location |
+|-----------|------|----------|
+| Frontend | React + TypeScript | `frontend/` |
+| Backend API | FastAPI (Python 3.10+) | `backend/` |
+| Worker | Python async processor | `worker/` |
+| Database | PostgreSQL | via Docker Compose |
+| Vector Search | pgvector / Chroma | via Docker Compose |
+
+### Quick Start (once implemented)
 
 ```powershell
-git clone https://github.com/amitkv1983/mindstream.git
-cd mindstream
+# Backend
+cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e .
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+
+# All services
+docker compose up
 ```
 
 ### Run Tests
 
 ```powershell
-pytest
-```
+# Backend
+pytest backend/tests
 
-### Run Locally
-
-```powershell
-python -m mindstream.cli.run_report --channels configs/channels.txt
-streamlit run src/mindstream/ui/app.py
+# Frontend
+npm run test --prefix frontend
 ```
 
 ### Linting & Formatting
 
 ```powershell
-python -m compileall src tests
+# Backend
+ruff check backend/ ; mypy backend/
+
+# Frontend
+npm run lint --prefix frontend
 ```
 
 ---
@@ -110,26 +135,28 @@ python -m compileall src tests
 ## 4. Project Structure
 
 ```text
-src/
-  mindstream/
-    cli/
-    ingest/
-    process/
-    storage/
-    ui/
-tests/
-configs/
-data/
-  raw/
-  per_video/
-  reports/
-.context/
-  project/
-  sprint/
-  temp/
-  issues/
-  reports/
+.context/               # Governance documents (ADRs, sprint plans, decisions)
+  project/              # Durable committed context
+  sprint/               # Sprint-scoped committed context
+  temp/                 # Git-ignored scratch space
+  issues/               # Git-ignored per-issue workspaces
+  reports/              # Git-ignored generated reports
+.github/
+  workflows/            # 17 space_framework enforcement workflows
+  ISSUE_TEMPLATE/       # Issue templates (idea, epic, story, task, etc.)
+  labels.yml            # Canonical label taxonomy (input for 00-setup-labels)
+  CODEOWNERS
+  copilot-instructions.md
+  pull_request_template.md
+POC/
+  P_01/                 # Archived Streamlit/Python proof-of-concept
+frontend/               # React (TypeScript) — to be created
+backend/                # FastAPI (Python) — to be created
+worker/                 # Background job processor — to be created
 ```
+
+> The new `frontend/`, `backend/`, and `worker/` directories will be created as stories
+> progress through the state machine.
 
 ---
 

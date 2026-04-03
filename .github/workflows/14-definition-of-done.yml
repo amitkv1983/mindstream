@@ -8,6 +8,10 @@ on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   check-dod:
     name: Verify Definition of Done

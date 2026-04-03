@@ -10,6 +10,11 @@ on:
   issues:
     types: [opened, edited]
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 jobs:
   validate-pr-linking:
     runs-on: ubuntu-latest

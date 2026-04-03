@@ -1,0 +1,143 @@
+# Canonical label taxonomy for Mindstream
+# Used by: .github/workflows/00-setup-labels.yml
+# Reference: space_framework 20-rules/12-label-taxonomy.md
+#
+# Format: Each entry defines a GitHub label.
+# The 00-setup-labels workflow creates or updates these labels in the repository.
+# Run the workflow manually via: Actions > "Labels: Setup & Sync" > Run workflow
+
+# ---------------------------------------------------------------------------
+# TYPE labels — classify the kind of issue
+# ---------------------------------------------------------------------------
+- name: "type:idea"
+  color: "c5def5"
+  description: "New business idea or feature request (entry point to the state machine)"
+
+- name: "type:epic"
+  color: "7057ff"
+  description: "Large feature or initiative — decomposes into stories"
+
+- name: "type:story"
+  color: "0075ca"
+  description: "Implementable unit of work — maps to one PR"
+
+- name: "type:task"
+  color: "e4e669"
+  description: "Engineering task — sub-work item under a story"
+
+- name: "type:bug"
+  color: "d73a4a"
+  description: "Bug report — something is not working as expected"
+
+- name: "type:question"
+  color: "d876e3"
+  description: "Question or discussion — does not require a code change"
+
+# ---------------------------------------------------------------------------
+# STATE labels — track position in the space_framework state machine
+# Allowed transitions enforced by: 01-enforce-state-machine.yml
+# ---------------------------------------------------------------------------
+- name: "state:idea"
+  color: "fef2c0"
+  description: "Idea submitted — awaiting approval"
+
+- name: "state:approved"
+  color: "0e8a16"
+  description: "Idea approved — being scoped into stories"
+
+- name: "state:ready"
+  color: "0075ca"
+  description: "Story fully defined and ready for implementation (DoR met)"
+
+- name: "state:in-progress"
+  color: "e99695"
+  description: "Implementation in progress — branch created, work started"
+
+- name: "state:in-review"
+  color: "f9d0c4"
+  description: "PR open and under review"
+
+- name: "state:done"
+  color: "1a7f37"
+  description: "PR merged — acceptance criteria verified, DoD met"
+
+- name: "state:released"
+  color: "006b75"
+  description: "Released to production — tagged and deployed"
+
+- name: "state:blocked"
+  color: "b60205"
+  description: "Blocked — cannot progress until a dependency is resolved"
+
+- name: "state:on-hold"
+  color: "e4e669"
+  description: "Intentionally paused — will be resumed later"
+
+- name: "state:rejected"
+  color: "ee0701"
+  description: "Idea or story rejected — will not be implemented"
+
+# ---------------------------------------------------------------------------
+# PRIORITY labels — indicate urgency and importance
+# ---------------------------------------------------------------------------
+- name: "priority-critical"
+  color: "b60205"
+  description: "Critical priority — must be addressed immediately"
+
+- name: "priority-high"
+  color: "e99695"
+  description: "High priority — important, schedule in current sprint"
+
+- name: "priority-medium"
+  color: "f9d0c4"
+  description: "Medium priority — schedule in upcoming sprints"
+
+- name: "priority-low"
+  color: "c2e0c6"
+  description: "Low priority — nice to have, schedule when capacity allows"
+
+# ---------------------------------------------------------------------------
+# SIZE labels — estimate relative effort
+# ---------------------------------------------------------------------------
+- name: "size-xs"
+  color: "c2e0c6"
+  description: "Extra small — a few hours or trivial change"
+
+- name: "size-s"
+  color: "5ebeff"
+  description: "Small — half a day to one day of work"
+
+- name: "size-m"
+  color: "0075ca"
+  description: "Medium — a few days of work"
+
+- name: "size-l"
+  color: "7057ff"
+  description: "Large — one week or multiple complex components"
+
+- name: "size-xl"
+  color: "b60205"
+  description: "Extra large — multi-week effort, consider decomposing"
+
+# ---------------------------------------------------------------------------
+# STATUS labels — cross-cutting status flags
+# ---------------------------------------------------------------------------
+- name: "blocked"
+  color: "b60205"
+  description: "Currently blocked — see issue for details"
+
+- name: "on-hold"
+  color: "e4e669"
+  description: "Work paused intentionally"
+
+- name: "duplicate"
+  color: "cfd3d7"
+  description: "This issue or PR is a duplicate of another"
+
+- name: "wontfix"
+  color: "ffffff"
+  description: "Will not be fixed or implemented"
+
+- name: "needs-review"
+  color: "ffa500"
+  description: "Needs a review from maintainer or tech lead"

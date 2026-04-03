@@ -9,6 +9,11 @@ on:
   pull_request:
     types: [opened, labeled, unlabeled]
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 jobs:
   validate-labels:
     name: Validate Issue/PR Labels

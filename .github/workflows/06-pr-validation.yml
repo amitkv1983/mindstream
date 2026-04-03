@@ -8,6 +8,10 @@ on:
   pull_request:
     types: [opened, edited, reopened]
 
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   pr-title-format:
     name: Validate PR Title Format

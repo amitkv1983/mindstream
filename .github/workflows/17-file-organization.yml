@@ -25,7 +25,7 @@ jobs:
 
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
-          INVALID_TESTS=$(echo "$CHANGED_FILES" | grep -E '^(test_|.*_test\.py|.*_spec\.ts|.*_test\.go)' | grep -v '^tests/' || true)
+          INVALID_TESTS=$(echo "$CHANGED_FILES" | grep -E '^(test_|.*_test\.py|.*_spec\.ts|.*_test\.go)' | grep -v '^tests/' | grep -v '^frontend/' | grep -v '^backend/' | grep -v '^worker/' || true)
 
           if [ -n "$INVALID_TESTS" ]; then
             echo "ERROR: Test files must be in tests/ directory:"
